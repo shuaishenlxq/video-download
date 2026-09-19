@@ -1,0 +1,38 @@
+- generic [ref=f1e3]:
+  - generic [ref=f1e4]:
+    - generic [ref=f1e8]: 媒探MediaSniff
+    - button "关闭" [ref=f1e9] [cursor=pointer]
+  - generic [ref=f1e13]:
+    - generic [ref=f1e14]:
+      - heading "使用须知" [level=5] [ref=f1e15]
+      - paragraph [ref=f1e16]:
+        - generic [ref=f1e17]: · 本扩展用于保存你有权访问与使用的媒体内容
+        - generic [ref=f1e18]: · 请仅下载拥有合法使用权的内容，并遵守目标站点的服务条款与当地法律
+        - generic [ref=f1e19]: · 不支持受 DRM 保护的内容；不提供任何绕过能力
+        - generic [ref=f1e20]: · 全程本地处理：不采集浏览数据，不上传任何媒体内容与地址
+      - generic [ref=f1e21]:
+        - button "我已阅读并理解上述内容" [ref=f1e22] [cursor=pointer]
+        - text: 我已阅读并理解上述内容
+        - button "确认并继续" [disabled] [ref=f1e23]
+    - generic [ref=f1e24]: 处理引擎状态
+    - generic [ref=f1e26]:
+      - generic [ref=f1e27]:
+        - text: 浏览器内引擎
+        - generic [ref=f1e29]: ● 加载中
+      - generic [ref=f1e30]: 支持：合并封装、分片合并、加密流解密
+      - generic [ref=f1e31]: 无需安装，随扩展内置
+    - generic [ref=f1e32]:
+      - generic [ref=f1e33]:
+        - text: 本地引擎
+        - generic [ref=f1e35]: ○ 未安装
+      - generic [ref=f1e36]: 支持：格式转码、本地文件转换、超大文件
+      - generic [ref=f1e37]: ⓘ 安装本地引擎后可解锁转码与大文件能力：
+      - generic [ref=f1e38]:
+        - generic [ref=f1e39]: $
+        - text: mediasniff-engine install
+      - button "已执行，重新检测" [ref=f1e41] [cursor=pointer]
+    - generic [ref=f1e42]:
+      - generic [ref=f1e43]: ready · 绿
+      - generic [ref=f1e44]: installed_unregistered · 黄
+      - generic [ref=f1e45]: not_installed · 灰
+      - generic [ref=f1e46]: version_mismatch · 黄＋版本对比

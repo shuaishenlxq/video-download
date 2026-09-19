@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><title>MediaSniff 嗅探测试页</title></head>
+<body>
+  <h1>嗅探 fixture 页面</h1>
+  <video id="v" controls width="320" poster="poster.png">
+    <source src="sample.mp4" type="video/mp4" />
+  </video>
+  <audio controls src="audio.mp3"></audio>
+  <script>
+    // 模拟 hls.js 行为：页面 JS 主动 fetch 清单（网络层 + 探针双路覆盖）
+    fetch('stream/master.m3u8').catch(() => {});
+    // 模拟动态设置媒体源
+    setTimeout(() => {
+      const v = document.getElementById('v');
+      v.addEventListener('play', () => v.play().catch(() => {}));
+    }, 100);
+  </script>
+</body>
+</html>

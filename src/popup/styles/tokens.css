@@ -1,0 +1,50 @@
+/* ============ MediaSniff 设计 Token（源自 design/MediaSniff-UI-Overview-v1.html，1:1 移植）============ */
+:root{
+  --bg:#EEF1F4;
+  --page-text:#1A1D21;
+  --panel:#FFFFFF;
+  --card:#F7F9FA;
+  --card-2:#EFF3F5;
+  --text:#1A1D21;
+  --text-2:#5F6B7A;
+  --text-3:#98A2AE;
+  --border:#E3E8ED;
+  --border-2:#D4DBE2;
+  --accent:#17A184;          /* 浅底用深薄荷，保证对比度 */
+  --accent-vivid:#3CDBC0;
+  --accent-soft:#E2F7F1;
+  --accent-text:#0E7A64;
+  --danger:#DE4A4F;
+  --danger-soft:#FCEBEC;
+  --warn:#B97F24;
+  --warn-soft:#FBF1DF;
+  --ok:#2E9E5B;
+  --ok-soft:#E5F5EB;
+  --info-soft:#EDF1F5;
+  --shadow:0 1px 2px rgba(16,24,32,.06),0 12px 32px rgba(16,24,32,.10);
+  --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,monospace;
+}
+[data-theme="dark"]{
+  --bg:#0B0E12;
+  --page-text:#F2F2F0;
+  --panel:#15191F;
+  --card:#1B2028;
+  --card-2:#222834;
+  --text:#F2F2F0;
+  --text-2:#A9B2BD;
+  --text-3:#77808C;
+  --border:#262D37;
+  --border-2:#333C48;
+  --accent:#3CDBC0;
+  --accent-vivid:#3CDBC0;
+  --accent-soft:#123B33;
+  --accent-text:#5EE6CC;
+  --danger:#F26D71;
+  --danger-soft:#3A2225;
+  --warn:#E0A95B;
+  --warn-soft:#3A2F1D;
+  --ok:#57C879;
+  --ok-soft:#1D3226;
+  --info-soft:#222834;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 14px 40px rgba(0,0,0,.5);
+}

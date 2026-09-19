@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MediaSniff 媒探 · 浮层 UI 高保真 Overview v1</title>
+<!--
+  ============================================================
+  MediaSniff（媒探）浮层 UI 高保真 · Overview 平铺
+  依据：docs/PRD-MediaSniff-V1.0.md §4.4 原型 P-01 ~ P-07
+  风格：清爽工具风 · 浅色为主 + 深色切换（右上角切换）
+  设计 token：薄荷青 #3CDBC0 强调（深底直接用，浅底加深保证对比度）
+  所有数据均为示意占位，不代表真实站点
+  ============================================================
+-->
+<style>
+  /* ---------- Design Tokens ---------- */
+  :root{
+    --bg:#EEF1F4;
+    --page-text:#1A1D21;
+    --panel:#FFFFFF;
+    --card:#F7F9FA;
+    --card-2:#EFF3F5;
+    --text:#1A1D21;
+    --text-2:#5F6B7A;
+    --text-3:#98A2AE;
+    --border:#E3E8ED;
+    --border-2:#D4DBE2;
+    --accent:#17A184;          /* 浅底用深薄荷，保证对比度 */
+    --accent-vivid:#3CDBC0;
+    --accent-soft:#E2F7F1;
+    --accent-text:#0E7A64;
+    --danger:#DE4A4F;
+    --danger-soft:#FCEBEC;
+    --warn:#B97F24;
+    --warn-soft:#FBF1DF;
+    --ok:#2E9E5B;
+    --ok-soft:#E5F5EB;
+    --info-soft:#EDF1F5;
+    --shadow:0 1px 2px rgba(16,24,32,.06),0 12px 32px rgba(16,24,32,.10);
+    --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,monospace;
+  }
+  [data-theme="dark"]{
+    --bg:#0B0E12;
+    --page-text:#F2F2F0;
+    --panel:#15191F;
+    --card:#1B2028;
+    --card-2:#222834;
+    --text:#F2F2F0;
+    --text-2:#A9B2BD;
+    --text-3:#77808C;
+    --border:#262D37;
+    --border-2:#333C48;
+    --accent:#3CDBC0;
+    --accent-vivid:#3CDBC0;
+    --accent-soft:#123B33;
+    --accent-text:#5EE6CC;
+    --danger:#F26D71;
+    --danger-soft:#3A2225;
+    --warn:#E0A95B;
+    --warn-soft:#3A2F1D;
+    --ok:#57C879;
+    --ok-soft:#1D3226;
+    --info-soft:#222834;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 14px 40px rgba(0,0,0,.5);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:var(--bg);color:var(--page-text);
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Segoe UI","Microsoft YaHei",sans-serif;
+    font-size:14px;line-height:1.5;
+    transition:background .25s,color .25s;
+    padding:0 40px 80px;
+  }
+  ::-webkit-scrollbar{width:8px;height:8px}
+  ::-webkit-scrollbar-thumb{background:var(--border-2);border-radius:4px}
+  ::-webkit-scrollbar-track{background:transparent}
+
+  /* ---------- Page Header ---------- */
+  .page-head{max-width:1720px;margin:0 auto;padding:36px 0 8px;display:flex;align-items:flex-end;gap:24px;flex-wrap:wrap}
+  .page-head h1{font-size:26px;font-weight:700;letter-spacing:.01em}
+  .page-head h1 .en{color:var(--text-3);font-weight:500;font-size:18px;margin-left:8px}
+  .page-head .sub{color:var(--text-2);font-size:13px;margin-top:6px}
+  .head-right{margin-left:auto;display:flex;align-items:center;gap:16px}
+  .swatches{display:flex;gap:6px}
+  .sw{width:26px;height:26px;border-radius:8px;border:1px solid var(--border);position:relative}
+  .sw i{position:absolute;left:50%;top:calc(100% + 3px);transform:translateX(-50%);font-style:normal;font-size:9px;color:var(--text-3);white-space:nowrap}
+  .theme-btn{
+    border:1px solid var(--border-2);background:var(--panel);color:var(--text);
+    border-radius:10px;padding:8px 16px;font-size:13px;cursor:pointer;font-weight:500;
+    box-shadow:0 1px 2px rgba(16,24,32,.08);transition:transform .15s;
+  }
+  .theme-btn:hover{transform:translateY(-1px)}
+  .legend{max-width:1720px;margin:18px auto 0;color:var(--text-2);font-size:12.5px;display:flex;gap:20px;flex-wrap:wrap}
+  .legend b{color:var(--text);font-weight:600}
+
+  /* ---------- Panels layout ---------- */
+  .board{max-width:1720px;margin:0 auto;padding-top:34px;display:flex;flex-wrap:wrap;gap:44px;align-items:flex-start}
+  .shot{display:flex;flex-direction:column;gap:10px}
+  .shot-label{font-size:13px;font-weight:600;color:var(--text)}
+  .shot-label .code{font-family:var(--mono);font-size:11px;color:var(--accent-text);background:var(--accent-soft);border-radius:5px;padding:2px 7px;margin-right:8px;font-weight:600}
+  .shot-label .desc{font-weight:400;color:var(--text-3);margin-left:8px;font-size:12px}
+
+  /* ---------- Popup frame（浏览器浮层外壳）---------- */
+  .popup{
+    width:384px;background:var(--panel);border:1px solid var(--border);
+    border-radius:14px;box-shadow:var(--shadow);overflow:hidden;
+    display:flex;flex-direction:column;
+  }
+  .popup .body{padding:0}
+
+  /* ---------- Top bar ---------- */
+  .topbar{display:flex;align-items:center;gap:9px;padding:11px 14px;border-bottom:1px solid var(--border)}
+  .logo{width:22px;height:22px;flex:none}
+  .brand{font-size:14px;font-weight:700;letter-spacing:.01em}
+  .brand span{font-weight:400;color:var(--text-3);font-size:12px;margin-left:5px}
+  .topbar .spacer{flex:1}
+  .task-pill{
+    display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text-2);
+    background:var(--card);border:1px solid var(--border);border-radius:999px;padding:3px 10px;cursor:default;
+  }
+  .task-pill b{color:var(--accent-text);background:var(--accent-soft);border-radius:999px;font-size:11px;padding:0 6px;line-height:17px}
+  .icon-btn{
+    width:26px;height:26px;border-radius:8px;border:none;background:transparent;color:var(--text-2);
+    display:inline-flex;align-items:center;justify-content:center;cursor:default;
+  }
+  .icon-btn:hover{background:var(--card-2)}
+
+  /* ---------- Tabs ---------- */
+  .tabs{display:flex;gap:2px;padding:8px 12px 0;border-bottom:1px solid var(--border)}
+  .tab{
+    padding:7px 14px 9px;font-size:13.5px;color:var(--text-2);cursor:default;position:relative;
+    border-radius:8px 8px 0 0;display:flex;align-items:center;gap:6px;
+  }
+  .tab.active{color:var(--text);font-weight:600}
+  .tab.active::after{content:"";position:absolute;left:10px;right:10px;bottom:-1px;height:2.5px;border-radius:2px;background:var(--accent)}
+  .tab .n{font-size:10.5px;background:var(--accent-soft);color:var(--accent-text);border-radius:999px;padding:0 6px;line-height:16px;font-weight:600}
+
+  /* ---------- Toolbar row（统计 + 筛选）---------- */
+  .toolbar{display:flex;align-items:center;gap:8px;padding:10px 14px 8px}
+  .toolbar .stat{font-size:12.5px;color:var(--text-2);flex:1}
+  .toolbar .stat b{color:var(--text);font-weight:600}
+  .seg{display:flex;background:var(--card-2);border-radius:8px;padding:2px;gap:1px}
+  .seg .opt{font-size:12px;padding:3.5px 10px;border-radius:6px;color:var(--text-2);cursor:default;white-space:nowrap}
+  .seg .opt.on{background:var(--panel);color:var(--text);font-weight:600;box-shadow:0 1px 3px rgba(16,24,32,.12)}
+  .ghost-btn{
+    display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--text-2);
+    border:1px solid var(--border);border-radius:8px;padding:4px 9px;background:var(--panel);cursor:default;white-space:nowrap;
+  }
+  .ghost-btn:hover{border-color:var(--border-2)}
+
+  /* ---------- Search ---------- */
+  .search{margin:0 14px 10px;display:flex;align-items:center;gap:7px;background:var(--card);border:1px solid var(--border);border-radius:9px;padding:6px 10px;color:var(--text-3)}
+  .search input{border:none;outline:none;background:transparent;color:var(--text);font-size:12.5px;flex:1;font-family:inherit}
+  .search input::placeholder{color:var(--text-3)}
+
+  /* ---------- Media entries ---------- */
+  .mlist{display:flex;flex-direction:column}
+  .mitem{display:flex;gap:11px;padding:11px 14px;border-top:1px solid var(--border)}
+  .mitem:first-child{border-top:none}
+  .thumb{
+    width:64px;height:44px;border-radius:8px;flex:none;position:relative;overflow:hidden;
+    background:linear-gradient(135deg,var(--card-2),var(--card));
+    display:flex;align-items:center;justify-content:center;color:var(--text-3);
+  }
+  .thumb.audio{width:44px;height:44px;border-radius:10px}
+  .thumb .dur{position:absolute;right:3px;bottom:3px;font-size:9px;background:rgba(10,12,16,.72);color:#fff;border-radius:4px;padding:0 4px;line-height:14px;font-family:var(--mono)}
+  .thumb svg.skeleton{position:absolute;inset:0;width:100%;height:100%}
+  .minfo{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+  .mtitle{font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:6px}
+  .mtitle .exp{font-size:11px;color:var(--text-3);font-weight:400;flex:none;display:inline-flex;align-items:center;gap:2px}
+  .mspec{font-size:11.5px;color:var(--text-2);font-family:var(--mono);letter-spacing:-.01em}
+  .mbadges{display:flex;gap:5px;flex-wrap:wrap}
+  .tag{font-size:10.5px;border-radius:5px;padding:1.5px 6px;font-weight:600;line-height:16px}
+  .tag.res{background:var(--info-soft);color:var(--text-2)}
+  .tag.dash{background:var(--accent-soft);color:var(--accent-text)}
+  .tag.enc{background:var(--warn-soft);color:var(--warn)}
+  .tag.drm{background:var(--danger-soft);color:var(--danger)}
+  .tag.err{background:var(--danger-soft);color:var(--danger)}
+  .mops{flex:none;display:flex;flex-direction:column;align-items:center;gap:4px}
+  .kebab{width:24px;height:24px;border-radius:7px;display:flex;align-items:center;justify-content:center;color:var(--text-3);cursor:default}
+  .kebab:hover{background:var(--card-2)}
+
+  /* ---------- Variant rows ---------- */
+  .variants{border-top:1px dashed var(--border-2);margin:6px 0 2px;padding-top:8px;display:flex;flex-direction:column;gap:3px;width:100%}
+  .vrow{display:flex;align-items:center;gap:9px;padding:5.5px 9px;border-radius:8px;font-size:12px;color:var(--text-2);cursor:default}
+  .vrow:hover{background:var(--card)}
+  .vrow.sel{background:var(--accent-soft);color:var(--accent-text);font-weight:600}
+  .vrow .radio{width:14px;height:14px;border-radius:50%;border:1.5px solid var(--border-2);flex:none;position:relative}
+  .vrow.sel .radio{border-color:var(--accent)}
+  .vrow.sel .radio::after{content:"";position:absolute;inset:2.5px;border-radius:50%;background:var(--accent)}
+  .vrow .vspec{font-family:var(--mono);font-size:11px;flex:1}
+  .vrow .rec{font-size:10px;color:var(--accent-text);background:var(--accent-soft);border:1px solid var(--accent);border-radius:5px;padding:0 5px;line-height:15px;font-weight:600}
+  [data-theme="dark"] .vrow .rec{border-color:transparent}
+
+  /* ---------- Batch bar ---------- */
+  .batch{display:flex;align-items:center;gap:10px;padding:9px 14px;border-top:1px solid var(--border);background:var(--card)}
+  .cbx{width:15px;height:15px;border-radius:4.5px;border:1.5px solid var(--border-2);flex:none;cursor:default;position:relative}
+  .cbx.on{background:var(--accent);border-color:var(--accent)}
+  .cbx.on::after{content:"";position:absolute;left:4px;top:1.5px;width:4px;height:7px;border:solid #fff;border-width:0 1.8px 1.8px 0;transform:rotate(43deg)}
+  .batch .cnt{font-size:12px;color:var(--text-2);flex:1}
+  .batch .cnt b{color:var(--text)}
+  .btn{
+    border:none;border-radius:9px;padding:7px 16px;font-size:12.5px;font-weight:600;cursor:default;font-family:inherit;
+    background:var(--accent);color:#063B30;
+  }
+  [data-theme="dark"] .btn{color:#04231C}
+  .btn.primary{background:var(--accent)}
+  .btn[disabled]{background:var(--card-2);color:var(--text-3);font-weight:500}
+  .btn.line{background:transparent;border:1px solid var(--border-2);color:var(--text-2);font-weight:500}
+  .btn.danger-line{background:transparent;border:1px solid var(--danger);color:var(--danger);font-weight:500}
+
+  /* ---------- Empty state ---------- */
+  .empty{padding:38px 24px 30px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:6px}
+  .empty .illus{width:72px;height:72px;border-radius:20px;background:var(--card-2);display:flex;align-items:center;justify-content:center;color:var(--text-3);margin-bottom:10px}
+  .empty h4{font-size:13.5px;color:var(--text);font-weight:600}
+  .empty p{font-size:12px;color:var(--text-2)}
+  .empty .acts{display:flex;gap:8px;margin-top:12px}
+
+  /* ---------- Context menu (P-02) ---------- */
+  .menu-wrap{position:relative;padding:11px 14px}
+  .menu{
+    position:absolute;left:120px;top:16px;width:196px;background:var(--panel);
+    border:1px solid var(--border);border-radius:11px;box-shadow:var(--shadow);padding:5px;z-index:5;
+  }
+  .mi{display:flex;align-items:center;gap:9px;font-size:12.5px;color:var(--text);padding:7px 10px;border-radius:7px;cursor:default}
+  .mi:hover{background:var(--card)}
+  .mi.off{color:var(--text-3)}
+  .mi.off:hover{background:transparent}
+  .mi svg{flex:none;color:var(--text-2)}
+  .mi.off svg{color:var(--text-3)}
+  .mi .hint{margin-left:auto;font-size:10px;color:var(--text-3)}
+  .msep{height:1px;background:var(--border);margin:4px 8px}
+
+  /* ---------- Dialog cards (P-02 / P-06) ---------- */
+  .dlg{margin:0 14px 12px;border:1px solid var(--border);border-radius:12px;padding:13px 14px;background:var(--card)}
+  .dlg.warn{border-color:var(--warn);background:var(--warn-soft)}
+  .dlg.info{background:var(--info-soft)}
+  .dlg h5{font-size:12.5px;display:flex;align-items:center;gap:7px;margin-bottom:6px}
+  .dlg.warn h5{color:var(--warn)}
+  .dlg p{font-size:11.8px;color:var(--text-2);line-height:1.55}
+  .dlg .acts{display:flex;justify-content:flex-end;gap:8px;margin-top:10px}
+  .dlg .btn{padding:5px 13px;font-size:11.5px}
+
+  /* ---------- Settings (P-03) ---------- */
+  .set-body{padding:12px 14px 6px;display:flex;flex-direction:column;gap:12px}
+  .srow{display:flex;align-items:flex-start;gap:10px;padding:7px 0}
+  .srow + .srow{border-top:1px solid var(--border)}
+  .srow .lb{width:86px;flex:none;font-size:12.5px;color:var(--text);padding-top:4.5px;font-weight:500}
+  .srow .ct{flex:1;min-width:0;display:flex;flex-direction:column;gap:7px}
+  .note{font-size:11px;color:var(--text-3);display:flex;gap:5px;align-items:flex-start;line-height:1.5}
+  .note svg{flex:none;margin-top:2px}
+  .inp{
+    background:var(--card);border:1px solid var(--border);border-radius:8px;padding:5.5px 9px;font-size:12px;
+    color:var(--text);font-family:var(--mono);width:100%;outline:none;
+  }
+  .inp.short{width:90px}
+  .inp:focus{border-color:var(--accent)}
+  .range{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text-2)}
+  .chips{display:flex;flex-wrap:wrap;gap:5px}
+  .chip{font-size:11px;font-family:var(--mono);background:var(--card-2);border:1px solid var(--border);color:var(--text-2);border-radius:6px;padding:2px 7px}
+  .chip.add{border-style:dashed;color:var(--accent-text);border-color:var(--accent);background:var(--accent-soft);cursor:default;font-family:inherit}
+  .domlist{border:1px solid var(--border);border-radius:9px;overflow:hidden}
+  .domrow{display:flex;align-items:center;justify-content:space-between;padding:6.5px 10px;font-size:12px;font-family:var(--mono);color:var(--text-2);background:var(--card)}
+  .domrow + .domrow{border-top:1px solid var(--border)}
+  .domrow .x{color:var(--text-3);width:18px;height:18px;border-radius:5px;display:flex;align-items:center;justify-content:center}
+  .domrow .x:hover{background:var(--danger-soft);color:var(--danger)}
+  .compliance{border:1px solid var(--accent);border-radius:12px;background:var(--accent-soft);padding:12px 14px}
+  .compliance h5{font-size:12.5px;color:var(--accent-text);display:flex;align-items:center;gap:7px;margin-bottom:8px;font-weight:600}
+  .compliance .line{display:flex;align-items:center;gap:9px;font-size:12px;color:var(--text)}
+  .compliance .line a{color:var(--accent-text);font-size:11.5px;margin-left:auto;text-decoration:underline;cursor:default}
+  .switchrow{display:flex;align-items:center;gap:9px;font-size:12px;color:var(--text-2)}
+  .sw2{width:30px;height:17px;border-radius:999px;background:var(--border-2);position:relative;flex:none}
+  .sw2::after{content:"";position:absolute;top:2px;left:2px;width:13px;height:13px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.25)}
+  .sw2.on{background:var(--accent)}
+  .sw2.on::after{left:auto;right:2px}
+  .set-foot{display:flex;border-top:1px solid var(--border);margin-top:4px}
+  .set-foot .fk{flex:1;text-align:center;font-size:12px;color:var(--text-2);padding:10px 4px;cursor:default;display:flex;align-items:center;justify-content:center;gap:5px}
+  .set-foot .fk + .fk{border-left:1px solid var(--border)}
+  .group-title{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--text-2);letter-spacing:.04em;margin-top:2px}
+  .group-title .ln{flex:1;height:1px;background:var(--border)}
+
+  /* ---------- Task panel (P-05) ---------- */
+  .tstats{display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid var(--border)}
+  .tstats .c{font-size:12.5px;color:var(--text-2)}
+  .tstats .c b{color:var(--text);font-size:14px;font-weight:700}
+  .tstats .c.ok b{color:var(--ok)}
+  .tstats .acts{margin-left:auto;display:flex;gap:6px}
+  .task{padding:11px 14px;border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:7px}
+  .task .t1{display:flex;align-items:center;gap:8px}
+  .task .t1 .nm{font-size:12.5px;font-weight:600;color:var(--text);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .task .t1 .dom{font-size:10.5px;color:var(--text-3);font-family:var(--mono)}
+  .pbar{height:7px;border-radius:4px;background:var(--card-2);overflow:hidden;position:relative}
+  .pbar .fill{height:100%;border-radius:4px;background:var(--accent)}
+  .pbar .fill.indet{width:38%;animation:slide 1.3s ease-in-out infinite}
+  @keyframes slide{0%{margin-left:-40%}100%{margin-left:105%}}
+  .task .t2{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--text-2);font-family:var(--mono)}
+  .task .t2 .stage{font-family:inherit;font-weight:600;font-size:11px;padding:1px 7px;border-radius:5px;background:var(--accent-soft);color:var(--accent-text)}
+  .task .t2 .stage.merge{background:var(--info-soft);color:var(--text-2)}
+  .task .t2 .eng{margin-left:auto;font-family:inherit;font-size:10.5px;color:var(--text-3);display:flex;align-items:center;gap:4px}
+  .task .ctrl{display:flex;gap:4px;margin-left:auto}
+  .tgroup{padding:8px 14px 2px;display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;color:var(--text-2);letter-spacing:.03em}
+  .tgroup .chev{color:var(--text-3)}
+  .task.done .t2{font-family:inherit}
+  .task.done .okic{color:var(--ok)}
+  .task.fail{background:var(--danger-soft)}
+  [data-theme="dark"] .task.fail{background:transparent;border-left:2px solid var(--danger)}
+  .task .reason{font-size:11.5px;color:var(--danger);display:flex;gap:6px;align-items:flex-start;line-height:1.5}
+  .task .reason .keep{color:var(--text-2)}
+  .task .factors{display:flex;gap:7px}
+
+  /* ---------- Engine cards (P-06) ---------- */
+  .engcard{border:1px solid var(--border);border-radius:12px;padding:12px 14px;background:var(--card);display:flex;flex-direction:column;gap:5px}
+  .engcard .e1{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600}
+  .dot{width:8px;height:8px;border-radius:50%;flex:none}
+  .dot.ok{background:var(--ok);box-shadow:0 0 0 3px var(--ok-soft)}
+  .dot.warn{background:var(--warn);box-shadow:0 0 0 3px var(--warn-soft)}
+  .dot.off{background:var(--text-3);box-shadow:0 0 0 3px var(--info-soft)}
+  .engcard .st{font-size:11.5px;font-weight:600;margin-left:auto}
+  .engcard .st.ok{color:var(--ok)} .engcard .st.warn{color:var(--warn)} .engcard .st.off{color:var(--text-3)}
+  .engcard .cap{font-size:11.5px;color:var(--text-2)}
+  .engcard .sub{font-size:11px;color:var(--text-3)}
+  .cmdline{font-family:var(--mono);font-size:11px;background:var(--card-2);border:1px solid var(--border);border-radius:7px;padding:6px 9px;color:var(--text);display:flex;align-items:center;gap:6px}
+  .cmdline .p{color:var(--accent-text)}
+  .statelabels{display:flex;gap:6px;flex-wrap:wrap;padding:2px 14px 12px}
+
+  /* ---------- Log view (P-07) ---------- */
+  .logbar{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--border)}
+  .logbar .back{display:flex;align-items:center;gap:4px;font-size:12.5px;color:var(--text-2);cursor:default}
+  .logbar .tt{font-weight:700;font-size:13.5px;flex:1;text-align:center}
+  .loglist{padding:10px 14px;display:flex;flex-direction:column;gap:9px;font-family:var(--mono)}
+  .log{display:flex;flex-direction:column;gap:2px}
+  .log .l1{display:flex;align-items:center;gap:8px;font-size:11px}
+  .log .tm{color:var(--text-3)}
+  .lv{font-size:9.5px;font-weight:700;border-radius:4px;padding:1px 5px;letter-spacing:.04em;font-family:inherit}
+  .lv.warn{background:var(--warn-soft);color:var(--warn)}
+  .lv.err{background:var(--danger-soft);color:var(--danger)}
+  .lv.info{background:var(--info-soft);color:var(--text-2)}
+  .log .mod{color:var(--accent-text);font-weight:600}
+  .log .msg{color:var(--text);font-family:inherit;font-size:12px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .log .l2{font-size:11px;color:var(--text-2);padding-left:2px;font-family:inherit}
+  .log .l2 b{font-weight:600;color:var(--text-2)}
+  .logend{text-align:center;font-size:11px;color:var(--text-3);padding:10px 0 4px;font-family:inherit}
+
+  /* ---------- Icon states (P-04) ---------- */
+  .iconstates{display:flex;flex-direction:column;gap:0}
+  .iconrow{display:flex;align-items:center;gap:14px;padding:12px 16px;border-bottom:1px solid var(--border)}
+  .iconrow:last-child{border-bottom:none}
+  .icase{width:44px;height:44px;border-radius:13px;background:var(--card-2);display:flex;align-items:center;justify-content:center;position:relative;flex:none}
+  .iconrow .tx{flex:1}
+  .iconrow .tx b{font-size:12.5px;display:flex;align-items:center;gap:7px}
+  .iconrow .tx span{font-size:11.5px;color:var(--text-2);display:block;margin-top:1px}
+  .badge{position:absolute;top:-4px;right:-6px;min-width:17px;height:17px;border-radius:999px;background:var(--accent);color:#04231C;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 4px;border:2px solid var(--panel);font-family:inherit}
+  [data-theme="dark"] .badge{color:#04231C}
+  .badge.lock{background:var(--text-3);color:#fff}
+  .ring{position:absolute;inset:-3px;border-radius:16px;border:2.5px solid transparent;border-top-color:var(--accent-vivid);border-right-color:var(--accent-vivid);animation:spin 1.1s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @keyframes breathe{0%,100%{opacity:1}50%{opacity:.55}}
+  .pulse{animation:breathe 1.6s ease-in-out infinite}
+  .gray{filter:grayscale(1);opacity:.45}
+</style>
+</head>
+<body>
+
+<!-- ============ 页头 ============ -->
+<div class="page-head">
+  <div>
+    <h1>MediaSniff <span class="en">媒探 · 浮层 UI 高保真 Overview</span></h1>
+    <div class="sub">依据 PRD §4.4 原型 P-01 ~ P-07 ＋ F-209 三态 · 实际渲染宽度 384px（PRD 约束 360-420px）· 数据均为示意</div>
+  </div>
+  <div class="head-right">
+    <div class="swatches">
+      <div class="sw" style="background:#3CDBC0"><i>#3CDBC0</i></div>
+      <div class="sw" style="background:#17A184"><i>accent-deep</i></div>
+      <div class="sw" style="background:#EEF1F4"><i>bg</i></div>
+      <div class="sw" style="background:#FFFFFF"><i>panel</i></div>
+      <div class="sw" style="background:#0B0E12"><i>dark-bg</i></div>
+      <div class="sw" style="background:#DE4A4F"><i>danger</i></div>
+      <div class="sw" style="background:#B97F24"><i>warn</i></div>
+    </div>
+    <button class="theme-btn" onclick="toggleTheme()">🌓 切换深色</button>
+  </div>
+</div>
+<div class="legend">
+  <span><b>风格</b> 清爽工具风 · 薄荷青单强调色</span>
+  <span><b>字体</b> 系统 UI 字体（扩展真实环境）＋ mono 规格数据</span>
+  <span><b>交互</b> 即时持久化 / 增量插入 / Toast 2s·4s / 二次确认仅五处</span>
+</div>
+
+<div class="board">
+
+  <!-- ================= P-01 媒体列表（默认态） ================= -->
+  <div class="shot">
+    <div class="shot-label"><span class="code">P-01</span>媒体列表 · 默认态<span class="desc">F-201/202/203/204 + 变体展开</span></div>
+    <div class="popup">
+      <div class="topbar">
+        <svg class="logo" viewBox="0 0 24 24" fill="none"><rect x="1" y="1" width="22" height="22" rx="7" fill="#17A184"/><path d="M9.5 8.2v7.6l6.2-3.8-6.2-3.8z" fill="#fff"/><path d="M5.2 6.5c.5-.9 1.3-1.7 2.2-2.2M4.3 4.2c.7-1.2 1.7-2.2 2.9-2.9" stroke="#8AEFD9" stroke-width="1.4" stroke-linecap="round" transform="translate(1.5 8.5)"/></svg>
+        <div class="brand">媒探<span>MediaSniff</span></div>
+        <div class="spacer"></div>
+        <div class="task-pill">任务 <b>2</b></div>
+        <button class="icon-btn"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button>
+      </div>
+      <div class="tabs">
+        <div class="tab active">下载器</div>
+        <div class="tab">任务</div>
+        <div class="tab">设置</div>
+      </div>
+      <div class="toolbar">
+        <div class="stat">当前页面检测到 <b>3</b> 个媒体</div>
+        <div class="seg"><div class="opt on">全部</div><div class="opt">视频</div><div class="opt">音频</div></div>
+        <button class="icon-btn"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="6" cy="6" r="4.2" stroke="currentColor" stroke-width="1.4"/><path d="M9.5 9.5L12.5 12.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></button>
+      </div>
+      <div class="search">
+        <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><circle cx="6" cy="6" r="4.2" stroke="currentColor" stroke-width="1.4"/><path d="M9.5 9.5L12.5 12.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+        <input placeholder="搜索标题 / 时长 10:30 / 体积 150MB">
+      </div>
+      <div class="mlist">
+        <!-- 条目 1：完整徽标 -->
+        <div class="mitem">
+          <div class="thumb">
+            <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><rect x="2" y="4" width="16" height="12" rx="3" stroke="currentColor" stroke-width="1.4"/><path d="M8.5 7.8v4.4l3.8-2.2-3.8-2.2z" fill="currentColor"/></svg>
+            <span class="dur">01:23:45</span>
+          </div>
+          <div class="minfo">
+            <div class="mtitle">第一讲-环境搭建.mp4</div>
+            <div class="mspec">1920×1080 · 428 MB · MP4</div>
+            <div class="mbadges"><span class="tag res">1080p</span><span class="tag dash">DASH 双轨</span><span class="tag enc">AES-128</span></div>
+          </div>
+          <div class="mops">
+            <div class="kebab"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><circle cx="7" cy="3" r="1.2"/><circle cx="7" cy="7" r="1.2"/><circle cx="7" cy="11" r="1.2"/></svg></div>
+          </div>
+        </div>
+        <!-- 条目 2：展开变体 -->
+        <div class="mitem" style="flex-wrap:wrap">
+          <div class="thumb">
+            <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><rect x="2" y="4" width="16" height="12" rx="3" stroke="currentColor" stroke-width="1.4"/><path d="M8.5 7.8v4.4l3.8-2.2-3.8-2.2z" fill="currentColor"/></svg>
+            <span class="dur">00:52:10</span>
+          </div>
+          <div class="minfo">
+            <div class="mtitle">第二讲-配置文件详解.mp4 <span class="exp">收起 <svg width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M2 6.5L5 3.5l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span></div>
+            <div class="mspec">1280×720 · 186 MB · MP4</div>
+            <div class="mbadges"><span class="tag res">720p · 3 变体</span></div>
+          </div>
+          <div class="mops">
+            <div class="kebab"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><circle cx="7" cy="3" r="1.2"/><circle cx="7" cy="7" r="1.2"/><circle cx="7" cy="11" r="1.2"/></svg></div>
+          </div>
+          <div class="variants">
+            <div class="vrow"><span class="radio"></span><span class="vspec">1920×1080 · 4500kbps · 310MB</span><span class="rec">推荐</span></div>
+            <div class="vrow sel"><span class="radio"></span><span class="vspec">1280×720 · 2500kbps · 186MB</span></div>
+            <div class="vrow"><span class="radio"></span><span class="vspec">854×480 · 1000kbps · 74MB</span></div>
+          </div>
+        </div>
+        <!-- 条目 3：音频 -->
+        <div class="mitem">
+          <div class="thumb audio">
+            <svg width="17" height="17" viewBox="0 0 20 20" fill="none"><path d="M4 12v-2a6 6 0 0112 0v2" stroke="currentColor" stroke-width="1.4"/><rect x="3" y="11.5" width="3.4" height="5" rx="1.4" stroke="currentColor" stroke-width="1.3"/><rect x="13.6" y="11.5" width="3.4" height="5" rx="1.4" stroke="currentColor" stroke-width="1.3"/></svg>
+          </div>
+          <div class="minfo">
+            <div class="mtitle">背景音乐-开场曲.m4a</div>
+            <div class="mspec">320kbps · 00:03:12 · 7.4 MB · M4A</div>
+          </div>
+          <div class="mops">
+            <div class="kebab"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><circle cx="7" cy="3" r="1.2"/><circle cx="7" cy="7" r="1.2"/><circle cx="7" cy="11" r="1.2"/></svg></div>
+          </div>
+        </div>
+      </div>
+      <div class="batch">
+        <div class="cbx"></div>
+        <div class="cnt">全选可下载项 · 已选 <b>0</b> 项</div>
+        <button class="btn" disabled>批量下载</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= P-02 操作菜单 + 不可下载态 ================= -->
+  <div class="shot">
+    <div class="shot-label"><span class="code">P-02</span>操作菜单 + 不可下载态<span class="desc">F-207 / F-110 / 引擎引导</span></div>
+    <div class="popup">
+      <div class="topbar">
+        <svg class="logo" viewBox="0 0 24 24" fill="none"><rect x="1" y="1" width="22" height="22" rx="7" fill="#17A184"/><path d="M9.5 8.2v7.6l6.2-3.8-6.2-3.8z" fill="#fff"/></svg>
+        <div class="brand">媒探<span>MediaSniff</span></div>
+        <div class="spacer"></div>
+        <div class="task-pill">任务 <b>2</b></div>
+        <button class="icon-btn"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button>
+      </div>
+      <div class="tabs">
+        <div class="tab active">下载器</div>
+        <div class="tab">任务</div>
+        <div class="tab">设置</div>
+      </div>
+      <!-- DRM 条目 + 浮出菜单 -->
+      <div class="menu-wrap">
+        <div class="mitem" style="padding:6px 0 52px">
+          <div class="thumb">
+            <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><rect x="2" y="4" width="16" height="12" rx="3" stroke="currentColor" stroke-width="1.4"/><path d="M8.5 7.8v4.4l3.8-2.2-3.8-2.2z" fill="currentColor"/></svg>
+            <span class="dur">00:45:00</span>
+          </div>
+          <div class="minfo">
+            <div class="mtitle">加密课程-第5讲.mp4</div>
+            <div class="mspec">1920×1080 · 310 MB · MP4</div>
+            <div class="mbadges"><span class="tag res">1080p</span><span class="tag drm">🔒 受保护</span></div>
+          </div>
+          <div class="mops">
+            <div class="kebab" style="background:var(--card-2);color:var(--text)"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><circle cx="7" cy="3" r="1.2"/><circle cx="7" cy="7" r="1.2"/><circle cx="7" cy="11" r="1.2"/></svg></div>
+          </div>
+        </div>
+        <div class="menu">
+          <div class="mi off"><svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M7 1.5v7M7 8.5L4 5.7M7 8.5l3-2.8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="rotate(180 7 7)"/><path d="M2 10.5v1a1.5 1.5 0 001.5 1.5h7a1.5 1.5 0 001.5-1.5v-1" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>下载<span class="hint">DRM</span></div>
+          <div class="mi off"><svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M7.8 1L3 8h3l-.8 5L10 6H7l.8-5z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>快速下载<span class="hint">DRM</span></div>
+          <div class="mi off"><svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M12 7a5 5 0 11-1.5-3.6M12 1.5v2.7H9.3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>下载并转换<span class="hint">需引擎</span></div>
+          <div class="msep"></div>
+          <div class="mi"><svg width="13" height="13" viewBox="0 0 14 14" fill="none"><rect x="4.5" y="4.5" width="7" height="7.5" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M9.5 4.5V3A1.5 1.5 0 008 1.5H3A1.5 1.5 0 001.5 3v5A1.5 1.5 0 003 9.5h1.5" stroke="currentColor" stroke-width="1.3"/></svg>复制地址</div>
+          <div class="mi"><svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M6 2.5H3A1.5 1.5 0 001.5 4v7A1.5 1.5 0 003 12.5h7A1.5 1.5 0 0011.5 11V8M8.5 1.5h4v4M12 2L6.8 7.2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>在新标签页预览</div>
+          <div class="mi" style="color:var(--danger)"><svg width="13" height="13" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.3"/><path d="M4.5 4.5l5 5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>加入域名黑名单</div>
+        </div>
+      </div>
+      <!-- DRM 说明浮层 -->
+      <div class="dlg warn">
+        <h5><svg width="13" height="13" viewBox="0 0 14 14" fill="none"><rect x="2.5" y="6" width="9" height="6" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M4.5 6V4.5a2.5 2.5 0 015 0V6" stroke="currentColor" stroke-width="1.3"/></svg>该内容受数字版权保护（DRM）</h5>
+        <p>平台限制下载，本扩展不提供绕过。<br>这是内容方的保护机制，不是扩展故障。</p>
+        <div class="acts"><button class="btn line">知道了</button></div>
+      </div>
+      <!-- 引擎引导浮层 -->
+      <div class="dlg info">
+        <h5><svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M12 7a5 5 0 11-1.5-3.6M12 1.5v2.7H9.3" stroke="var(--warn)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>需要本地处理引擎</h5>
+        <p>「下载并转换」需要本机安装处理引擎才能完成转码。<b style="color:var(--text)">仅需合并视频则无需安装</b>，可直接下载。</p>
+        <div class="acts"><button class="btn line">稍后</button><button class="btn">查看安装指引</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= 空态（F-209） ================= -->
+  <div class="shot">
+    <div class="shot-label"><span class="code">F-209</span>列表空态<span class="desc">三态之一 · 成因判定优先级：DRM ＞ 被过滤 ＞ 无媒体</span></div>
+    <div class="popup">
+      <div class="topbar">
+        <svg class="logo" viewBox="0 0 24 24" fill="none"><rect x="1" y="1" width="22" height="22" rx="7" fill="#17A184"/><path d="M9.5 8.2v7.6l6.2-3.8-6.2-3.8z" fill="#fff"/></svg>
+        <div class="brand">媒探<span>MediaSniff</span></div>
+        <div class="spacer"></div>
+        <button class="icon-btn"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button>
+      </div>
+      <div class="tabs">
+        <div class="tab active">下载器</div>
+        <div class="tab">任务</div>
+        <div class="tab">设置</div>
+      </div>
+      <div class="empty">
+        <div class="illus">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="1.5"/><path d="M15.8 15.8L20 20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M8.5 11h5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity=".55"/></svg>
+        </div>
+        <h4>当前页面未检测到可下载媒体</h4>
+        <p>播放页面中的视频试试——部分站点需开始播放后才会动态拉流</p>
+        <div class="acts">
+          <button class="btn line">查看帮助</button>
+          <button class="btn line">查看过滤规则</button>
+        </div>
+      </div>
+      <div class="mitem" style="border-top:1px solid var(--border)">
+        <div class="thumb">
+          <!-- 骨架占位（加载态） -->
+          <svg class="skeleton" viewBox="0 0 64 44" preserveAspectRatio="none"><rect width="64" height="44" fill="var(--card-2)"><animate attributeName="opacity" values=".5;1;.5" dur="1.4s" repeatCount="indefinite"/></rect></svg>
+        </div>
+        <div class="minfo">
+          <div style="height:10px;border-radius:4px;background:var(--card-2);width:78%;animation:breathe 1.4s infinite"></div>
+          <div style="height:8px;border-radius:4px;background:var(--card-2);width:52%;animation:breathe 1.4s infinite .2s"></div>
+          <div style="height:8px;border-radius:4px;background:var(--card-2);width:38%;animation:breathe 1.4s infinite .4s"></div>
+        </div>
+        <div class="mops"><span class="tag res" style="margin-top:2px">解析中</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= P-05 任务面板 ================= -->
+  <div class="shot">
+    <div class="shot-label"><span class="code">P-05</span>下载任务面板<span class="desc">F-208 · 阶段标签 / 引擎来源 / 失败续传</span></div>
+    <div class="popup">
+      <div class="topbar">
+        <svg class="logo" viewBox="0 0 24 24" fill="none"><rect x="1" y="1" width="22" height="22" rx="7" fill="#17A184"/><path d="M9.5 8.2v7.6l6.2-3.8-6.2-3.8z" fill="#fff"/></svg>
+        <div class="brand">媒探<span>MediaSniff</span></div>
+        <div class="spacer"></div>
+        <div class="task-pill">任务 <b>2</b></div>
+        <button class="icon-btn"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button>
+      </div>
+      <div class="tabs">
+        <div class="tab">下载器</div>
+        <div class="tab active">任务 <span class="n">2</span></div>
+        <div class="tab">设置</div>
+      </div>
+      <div class="tstats">
+        <div class="c">进行中 <b>2</b></div>
+        <div class="c ok">已完成 <b>5</b></div>
+        <div class="acts">
+          <button class="ghost-btn">暂停全部</button>
+          <button class="ghost-btn">清除记录</button>
+        </div>
+      </div>
+      <!-- 下载中 -->
+      <div class="task">
+        <div class="t1"><span class="nm">第一讲-环境搭建.mp4</span><span class="dom">example.com</span></div>
+        <div class="pbar"><div class="fill" style="width:58%"></div></div>
+        <div class="t2">
+          <span class="stage">下载中</span>
+          <span>248 / 428 MB · 4.2 MB/s · 剩 43s</span>
+          <span class="eng"><svg width="10" height="10" viewBox="0 0 12 12" fill="none"><rect x="1.5" y="1.5" width="9" height="9" rx="2" stroke="currentColor" stroke-width="1.2"/><path d="M5 4.2v3.6l3-1.8-3-1.8z" fill="currentColor"/></svg>浏览器内处理</span>
+          <span class="ctrl">
+            <button class="icon-btn"><svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><rect x="2" y="1.5" width="2.6" height="9" rx="1"/><rect x="7.4" y="1.5" width="2.6" height="9" rx="1"/></svg></button>
+            <button class="icon-btn"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 2l8 8M10 2l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+          </span>
+        </div>
+      </div>
+      <!-- 合并中（不确定态） -->
+      <div class="task">
+        <div class="t1"><span class="nm">第二讲-配置文件详解.mp4</span><span class="dom">example.com</span></div>
+        <div class="pbar"><div class="fill indet"></div></div>
+        <div class="t2">
+          <span class="stage merge">合并中</span>
+          <span>分片 186/186 已完成</span>
+          <span class="eng"><svg width="10" height="10" viewBox="0 0 12 12" fill="none"><rect x="1.5" y="1.5" width="9" height="9" rx="2" stroke="currentColor" stroke-width="1.2"/><path d="M5 4.2v3.6l3-1.8-3-1.8z" fill="currentColor"/></svg>浏览器内处理</span>
+          <span class="ctrl">
+            <button class="icon-btn" style="opacity:.4"><svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><rect x="2" y="1.5" width="2.6" height="9" rx="1"/><rect x="7.4" y="1.5" width="2.6" height="9" rx="1"/></svg></button>
+            <button class="icon-btn"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 2l8 8M10 2l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+          </span>
+        </div>
+      </div>
+      <!-- 已完成 -->
+      <div class="tgroup"><span class="chev">▾</span>已完成 (5)</div>
+      <div class="task done" style="border-bottom:1px solid var(--border)">
+        <div class="t1"><span class="okic"><svg width="13" height="13" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" fill="var(--ok-soft)"/><path d="M4.3 7.2l1.9 1.9 3.5-4" stroke="var(--ok)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="nm">第三讲-依赖管理.mp4</span><span class="dom">186 MB</span>
+          <span class="ctrl">
+            <button class="icon-btn" title="打开文件夹"><svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M1.5 3.5A1.5 1.5 0 013 2h3l1.2 1.5H11A1.5 1.5 0 0112.5 5v5A1.5 1.5 0 0111 11.5H3A1.5 1.5 0 011.5 10V3.5z" stroke="currentColor" stroke-width="1.3"/></svg></button>
+            <button class="icon-btn"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 2l8 8M10 2l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+          </span>
+        </div>
+        <div class="t2" style="color:var(--text-3);font-size:11px">浏览器内处理 · 00:52:10 存入 ~/Downloads/MediaSniff</div>
+      </div>
+      <div class="task done" style="border-bottom:1px solid var(--border)">
+        <div class="t1"><span class="okic"><svg width="13" height="13" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" fill="var(--ok-soft)"/><path d="M4.3 7.2l1.9 1.9 3.5-4" stroke="var(--ok)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="nm">第四讲-打包发布.mp4</span>
+          <span class="dom">DASH 双轨 · 本地引擎</span>
+        </div>
+      </div>
+      <!-- 已失败 -->
+      <div class="tgroup" style="color:var(--danger)"><span class="chev">▾</span>已失败 (1)</div>
+      <div class="task fail">
+        <div class="t1"><span class="nm">加密课程-第5讲.mp4</span></div>
+        <div class="reason">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style="flex:none;margin-top:2px"><circle cx="6" cy="6" r="5" stroke="currentColor" stroke-width="1.3"/><path d="M6 3.4v3.2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="6" cy="8.8" r=".8" fill="currentColor"/></svg>
+          <span>失败：访问凭证已失效（401）<span class="keep"> · 已保留 312 个分片，重试不从头开始</span></span>
+        </div>
+        <div class="factors">
+          <button class="btn" style="padding:5px 14px;font-size:11.5px">重试</button>
+          <button class="btn line" style="padding:5px 12px;font-size:11.5px">查看日志</button>
+          <button class="btn line" style="padding:5px 12px;font-size:11.5px">移除</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= P-03 设置页 ================= -->
+  <div class="shot">
+    <div class="shot-label"><span class="code">P-03</span>设置页<span class="desc">F-502/503/506 · 即时持久化 · 日志为二级入口</span></div>
+    <div class="popup">
+      <div class="topbar">
+        <svg class="logo" viewBox="0 0 24 24" fill="none"><rect x="1" y="1" width="22" height="22" rx="7" fill="#17A184"/><path d="M9.5 8.2v7.6l6.2-3.8-6.2-3.8z" fill="#fff"/></svg>
+        <div class="brand">媒探<span>MediaSniff</span></div>
+        <div class="spacer"></div>
+        <div class="task-pill">任务 <b>2</b></div>
+        <button class="icon-btn"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button>
+      </div>
+      <div class="tabs">
+        <div class="tab">下载器</div>
+        <div class="tab">任务</div>
+        <div class="tab active">设置</div>
+      </div>
+      <div class="set-body">
+        <!-- 合规卡（已确认态） -->
+        <div class="compliance">
+          <h5><svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M7 1.5l4.5 2v3.2c0 2.9-1.9 4.9-4.5 5.8-2.6-.9-4.5-2.9-4.5-5.8V3.5l4.5-2z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M5 7l1.5 1.5L9.5 5.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>使用须知与合规</h5>
+          <div class="line"><span class="cbx on"></span>我已阅读并同意仅下载我有合法使用权的内容<a>查看完整声明</a></div>
+        </div>
+
+        <!-- 嗅探设置 -->
+        <div class="group-title">嗅探设置<span class="ln"></span></div>
+        <div style="border:1px solid var(--border);border-radius:12px;padding:2px 13px">
+          <div class="srow">
+            <div class="lb">媒体类型</div>
+            <div class="ct"><div class="seg" style="align-self:flex-start"><div class="opt on">全部</div><div class="opt">仅视频</div><div class="opt">仅音频</div></div></div>
+          </div>
+          <div class="srow">
+            <div class="lb">体积范围</div>
+            <div class="ct"><div class="range"><input class="inp short" value="0"> MB ~ <input class="inp short" value="不限" style="width:70px"> MB</div></div>
+          </div>
+          <div class="srow">
+            <div class="lb">扩展名</div>
+            <div class="ct"><div class="chips"><span class="chip">mp4</span><span class="chip">webm</span><span class="chip">flv</span><span class="chip">mkv</span><span class="chip">ts</span><span class="chip">mp3</span><span class="chip">m4a</span><span class="chip add">＋ 添加</span></div></div>
+          </div>
+          <div class="srow">
+            <div class="lb">域名过滤</div>
+            <div class="ct">
+              <div class="seg" style="align-self:flex-start"><div class="opt on">黑名单</div><div class="opt">白名单</div><div class="opt">全部嗅探</div></div>
+              <div class="domlist">
+                <div class="domrow">ads.example.com<span class="x"><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M1.5 1.5l7 7M8.5 1.5l-7 7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></span></div>
+                <div class="domrow">static.cdn.bad.com<span class="x"><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M1.5 1.5l7 7M8.5 1.5l-7 7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></span></div>
+              </div>
+              <div class="chips"><span class="chip add">＋ 添加域名</span><span class="chip" style="font-family:inherit">批量导入</span><span class="chip" style="font-family:inherit">导出</span></div>
+              <div class="note"><svg width="11" height="11" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="currentColor" stroke-width="1.2"/><path d="M6 5.4V9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="6" cy="3.4" r=".75" fill="currentColor"/></svg>已打开页面需刷新后完全生效 · 区别于列表筛选：此处命中的媒体根本不会被检测</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 下载设置 -->
+        <div class="group-title">下载设置<span class="ln"></span></div>
+        <div style="border:1px solid var(--border);border-radius:12px;padding:2px 13px">
+          <div class="srow">
+            <div class="lb">并发</div>
+            <div class="ct">
+              <div class="range">同时任务 <input class="inp short" value="2" style="width:52px"> × 单任务分片 <input class="inp short" value="4" style="width:52px"></div>
+              <div class="note"><svg width="11" height="11" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="currentColor" stroke-width="1.2"/><path d="M6 5.4V9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="6" cy="3.4" r=".75" fill="currentColor"/></svg>峰值并发 8 个请求。修改仅对新任务生效</div>
+            </div>
+          </div>
+          <div class="srow">
+            <div class="lb">命名模板</div>
+            <div class="ct">
+              <input class="inp" value="{title}-{resolution}">
+              <div class="chips">
+                <span class="chip">{title}</span><span class="chip">{site}</span><span class="chip">{resolution}</span><span class="chip">{quality}</span><span class="chip">{bitrate}</span><span class="chip">{duration}</span><span class="chip">{date}</span><span class="chip">{index}</span><span class="chip">{ext}</span>
+              </div>
+              <div class="range">预览 <span style="font-family:var(--mono);font-size:11.5px;color:var(--accent-text);background:var(--accent-soft);border-radius:6px;padding:3px 8px">第一讲-环境搭建-1920x1080.mp4</span></div>
+            </div>
+          </div>
+          <div class="srow">
+            <div class="lb">保存位置</div>
+            <div class="ct">
+              <div class="seg" style="align-self:flex-start"><div class="opt on">默认目录</div><div class="opt">每次询问</div><div class="opt">固定目录</div></div>
+              <div class="range">子目录 <input class="inp" value="MediaSniff" style="width:150px;font-family:inherit"></div>
+              <div class="range" style="font-family:var(--mono);font-size:11px">~/Downloads/MediaSniff <span style="color:var(--text-3)">（只读）</span></div>
+              <div class="range">同名文件 <div class="seg"><div class="opt on">自动加序号</div><div class="opt">覆盖</div><div class="opt">跳过</div></div></div>
+            </div>
+          </div>
+          <div class="srow">
+            <div class="lb"></div>
+            <div class="ct" style="gap:9px">
+              <div class="switchrow"><span class="sw2"></span>点击条目直接快速下载<span style="color:var(--warn);font-size:11px">（易误触，开启需确认）</span></div>
+              <div class="switchrow"><span class="sw2 on"></span>任务完成时发送系统通知</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="group-title" style="margin-bottom:4px">转换设置 · 通用设置<span class="ln"></span></div>
+        <div class="note" style="padding-bottom:4px"><svg width="11" height="11" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="currentColor" stroke-width="1.2"/><path d="M6 5.4V9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="6" cy="3.4" r=".75" fill="currentColor"/></svg>转换设置需本地引擎（V1.0 摘要级规格）· 通用：语言 / 主题（本原型右上角可切）</div>
+      </div>
+      <div class="set-foot">
+        <div class="fk"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 2.5h8M2 6h8M2 9.5h5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>运行日志</div>
+        <div class="fk"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="4.7" stroke="currentColor" stroke-width="1.2"/><path d="M6 5.4V9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="6" cy="3.4" r=".75" fill="currentColor"/></svg>关于与合规</div>
+        <div class="fk"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M10.5 6A4.5 4.5 0 113 2.9M10.5 1.5v2.6H7.9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>恢复默认设置</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= P-06 合规确认 + 引擎状态 ================= -->
+  <div class="shot">
+    <div class="shot-label"><span class="code">P-06</span>合规确认 + 引擎状态<span class="desc">F-506 / F-401 · 引擎四态</span></div>
+    <div class="popup">
+      <div class="topbar">
+        <svg class="logo" viewBox="0 0 24 24" fill="none"><rect x="1" y="1" width="22" height="22" rx="7" fill="#17A184"/><path d="M9.5 8.2v7.6l6.2-3.8-6.2-3.8z" fill="#fff"/></svg>
+        <div class="brand">媒探<span>MediaSniff</span></div>
+        <div class="spacer"></div>
+        <button class="icon-btn"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button>
+      </div>
+      <div class="set-body" style="padding-top:14px">
+        <div class="dlg" style="margin:0">
+          <h5 style="font-weight:700">使用须知</h5>
+          <p style="display:flex;flex-direction:column;gap:4px">
+            <span>· 本扩展用于保存你有权访问与使用的媒体内容</span>
+            <span>· 请仅下载拥有合法使用权的内容，并遵守目标站点的服务条款与当地法律</span>
+            <span>· 不支持受 DRM 保护的内容；不提供任何绕过能力</span>
+            <span>· 全程本地处理：不采集浏览数据，不上传任何媒体内容与地址</span>
+          </p>
+          <div class="line" style="display:flex;align-items:center;gap:9px;margin-top:11px;font-size:12.5px">
+            <span class="cbx"></span>我已阅读并理解上述内容
+            <button class="btn" style="margin-left:auto;padding:5.5px 14px;font-size:11.5px" disabled>确认并继续</button>
+          </div>
+        </div>
+
+        <div class="group-title" style="margin-top:4px">处理引擎状态<span class="ln"></span></div>
+        <div class="engcard">
+          <div class="e1"><span class="dot ok"></span>浏览器内引擎<span class="st ok">● 就绪 · v1.0.2</span></div>
+          <div class="cap">支持：合并封装、分片合并、加密流解密</div>
+          <div class="sub">无需安装，随扩展内置</div>
+        </div>
+        <div class="engcard" style="border-color:var(--warn)">
+          <div class="e1"><span class="dot warn"></span>本地引擎<span class="st warn">○ 已安装，未注册</span></div>
+          <div class="cap">支持：格式转码、本地文件转换、超大文件</div>
+          <div class="sub">ⓘ 需要完成浏览器注册后才能使用：</div>
+          <div class="cmdline"><span class="p">$</span> mediasniff-engine install</div>
+          <div style="display:flex;justify-content:flex-end"><button class="btn line" style="font-size:11.5px">已执行，重新检测</button></div>
+        </div>
+        <div class="statelabels">
+          <span class="tag res">ready · 绿</span>
+          <span class="tag enc">installed_unregistered · 黄</span>
+          <span class="tag" style="background:var(--info-soft);color:var(--text-2)">not_installed · 灰</span>
+          <span class="tag enc">version_mismatch · 黄＋版本对比</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= P-07 运行日志 ================= -->
+  <div class="shot">
+    <div class="shot-label"><span class="code">P-07</span>运行日志<span class="desc">F-508 · 地址脱敏 · 凭证绝不记录</span></div>
+    <div class="popup">
+      <div class="logbar">
+        <span class="back"><svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M7.5 1.5L3 6l4.5 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>返回设置</span>
+        <span class="tt">运行日志</span>
+        <button class="ghost-btn">清空</button>
+        <button class="ghost-btn">导出</button>
+      </div>
+      <div class="toolbar" style="padding-bottom:2px">
+        <div class="seg"><div class="opt on">WARN 及以上</div><div class="opt">全部</div><div class="opt">仅错误</div></div>
+      </div>
+      <div class="search">
+        <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><circle cx="6" cy="6" r="4.2" stroke="currentColor" stroke-width="1.4"/><path d="M9.5 9.5L12.5 12.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+        <input placeholder="搜索关键字">
+      </div>
+      <div class="loglist">
+        <div class="log">
+          <div class="l1"><span class="tm">16:20:31</span><span class="lv warn">WARN</span><span class="mod">downloader</span><span class="msg">分片 #142 超时，第 2 次重试</span></div>
+          <div class="l2">任务：<b>第一讲-环境搭建.mp4</b></div>
+        </div>
+        <div class="log">
+          <div class="l1"><span class="tm">16:20:44</span><span class="lv warn">WARN</span><span class="mod">downloader</span><span class="msg">触发站点限流，并发 4 → 3</span></div>
+        </div>
+        <div class="log">
+          <div class="l1"><span class="tm">16:21:02</span><span class="lv err">ERROR</span><span class="mod">processor</span><span class="msg">合并校验失败：时长偏差 18%</span></div>
+          <div class="l2">数据已保留，可重新合并</div>
+        </div>
+        <div class="log">
+          <div class="l1"><span class="tm">16:21:30</span><span class="lv info">INFO</span><span class="mod">sniffer</span><span class="msg">检测到清单 example.com/video/***</span></div>
+        </div>
+        <div class="logend">—— 已显示最近 1000 条中的 4 条 ——</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= P-04 图标状态对照 ================= -->
+  <div class="shot">
+    <div class="shot-label"><span class="code">P-04</span>工具栏图标状态<span class="desc">F-106 · 16/32/48/128 四档 · 深底浅描边</span></div>
+    <div class="popup" style="width:384px">
+      <div class="iconstates">
+        <div class="iconrow">
+          <div class="icase">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" class="gray"><rect x="1.5" y="1.5" width="21" height="21" rx="7" stroke="currentColor" stroke-width="1.6"/><path d="M9.5 8.2v7.6l6.2-3.8-6.2-3.8z" fill="currentColor"/></svg>
+          </div>
+          <div class="tx"><b>无媒体</b><span>灰度静态 · 角标无 · 媒体数 = 0</span></div>
+        </div>
+        <div class="iconrow">
+          <div class="icase">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" class="pulse"><rect x="1.5" y="1.5" width="21" height="21" rx="7" fill="#17A184"/><path d="M9.5 8.2v7.6l6.2-3.8-6.2-3.8z" fill="#fff"/><path d="M5.5 17c-1-1-1.7-2.2-2-3.5" stroke="#8AEFD9" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </div>
+          <div class="tx"><b>检测中</b><span>彩色弱动效（呼吸）· 角标无 · 线索有、清单解析中</span></div>
+        </div>
+        <div class="iconrow">
+          <div class="icase">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><rect x="1.5" y="1.5" width="21" height="21" rx="7" fill="#17A184"/><path d="M9.5 8.2v7.6l6.2-3.8-6.2-3.8z" fill="#fff"/><path d="M5.5 17c-1-1-1.7-2.2-2-3.5" stroke="#8AEFD9" stroke-width="1.5" stroke-linecap="round"/></svg>
+            <span class="badge">3</span>
+          </div>
+          <div class="tx"><b>已检测</b><span>彩色动效 · 数字角标（超 9 显示 9+）· 存在可下载媒体</span></div>
+        </div>
+        <div class="iconrow">
+          <div class="icase">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><rect x="1.5" y="1.5" width="21" height="21" rx="7" fill="#17A184"/><path d="M9.5 8.2v7.6l6.2-3.8-6.2-3.8z" fill="#fff" opacity=".9"/></svg>
+            <span class="badge lock">🔒</span>
+          </div>
+          <div class="tx"><b>不可下载</b><span>彩色静态 · 灰锁角标 · 全部为 DRM 保护</span></div>
+        </div>
+        <div class="iconrow">
+          <div class="icase">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><rect x="1.5" y="1.5" width="21" height="21" rx="7" fill="#17A184"/><path d="M9.5 8.2v7.6l6.2-3.8-6.2-3.8z" fill="#fff"/></svg>
+            <span class="ring"></span>
+          </div>
+          <div class="tx"><b>任务进行中</b><span>彩色动效 + 进度环 · 与媒体角标叠加</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="note" style="max-width:384px">
+      <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="currentColor" stroke-width="1.2"/><path d="M6 5.4V9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="6" cy="3.4" r=".75" fill="currentColor"/></svg>
+      图标资源需输出 16 / 32 / 48 / 128 四档 PNG；深色主题必须用浅色描边版本，深底严禁深色图标（PRD P-04 配色要求）。
+    </div>
+  </div>
+
+</div>
+
+<script>
+  function toggleTheme(){
+    const b = document.body;
+    const dark = b.getAttribute('data-theme') === 'dark';
+    if(dark){ b.removeAttribute('data-theme'); localStorage.removeItem('ms-theme'); }
+    else { b.setAttribute('data-theme','dark'); localStorage.setItem('ms-theme','dark'); }
+  }
+  if(localStorage.getItem('ms-theme') === 'dark') document.body.setAttribute('data-theme','dark');
+</script>
+</body>
+</html>
